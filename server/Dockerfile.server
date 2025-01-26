@@ -1,8 +1,13 @@
 FROM node:20.18.0
-#18.20.2-alpine
 
 # Set working directory
 WORKDIR /app
+
+# Install cloudflared and sshpass
+RUN apt-get update && apt-get install -y curl sshpass && \
+    curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared.deb && \
+    dpkg -i cloudflared.deb && \
+    rm cloudflared.deb
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
@@ -10,6 +15,10 @@ RUN npm i
 
 # Copy the rest of the server files into the container
 COPY . .
+
+# Configure SSH
+RUN mkdir -p /root/.ssh && \
+    echo "Host mertalukas\n    HostName ssh.mertalukas.cz\n    ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h\n    User root" > /root/.ssh/config
 
 # Expose the port the server runs on
 EXPOSE 5200

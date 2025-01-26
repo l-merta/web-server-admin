@@ -1,14 +1,19 @@
-//import { useState } from 'react'
+import { useEffect } from "react";
 
-function App() {
+function Home() {
   const apiUrl = import.meta.env.VITE_API_URL;
-  console.log(apiUrl);
+  
+  useEffect(() => {
+    fetch(`${apiUrl}/websites`)
+      .then((response) => response.json())
+      .then((data) => console.log(data));
+  }, [apiUrl]);
 
   return (
     <>
-      React + Express + Docker boilerplate
+      <h1>admin.mertalukas.cz</h1>
     </>
   )
 }
 
-export default App
+export default Home
