@@ -1,11 +1,11 @@
 const { exec } = require('child_process');
 require('dotenv').config();
 
-const host_ssh = 'mertalukas';
-const ssh_password = process.env.HOST_SSH_PASSWORD;
+const ssh_host = process.env.SSH_HOST;
+const ssh_password = process.env.SSH_PASSWORD;
 
 function getCloudflaredConfig(callback) {
-  const command = `sshpass -p ${ssh_password} ssh -o StrictHostKeyChecking=no ${host_ssh} cat /etc/cloudflared/config.yml`;
+  const command = `sshpass -p ${ssh_password} ssh -o StrictHostKeyChecking=no ${ssh_host} cat /etc/cloudflared/config.yml`;
   console.log("Executing command:", command);
 
   exec(command, (error, stdout, stderr) => {

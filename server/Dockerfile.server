@@ -18,7 +18,8 @@ COPY . .
 
 # Configure SSH
 RUN mkdir -p /root/.ssh && \
-    echo "Host mertalukas\n    HostName ssh.mertalukas.cz\n    ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h\n    User root" > /root/.ssh/config
+    echo "Host mertalukas\n    HostName ssh.mertalukas.cz\n    ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h\n    User root\n" > /root/.ssh/config
+RUN echo "Host sql.mertalukas.cz\n    HostName sql.mertalukas.cz\n    ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h\n    User root" >> /root/.ssh/config
 
 # Expose the port the server runs on
 EXPOSE 5200
