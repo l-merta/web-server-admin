@@ -18,7 +18,7 @@ RUN cd server && npm install
 
 # Install cloudflared and sshpass
 RUN apt-get update && apt-get install -y curl sshpass && \
-    curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared.deb && \
+    curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-armhf.deb -o cloudflared.deb && \
     dpkg -i cloudflared.deb && \
     rm cloudflared.deb
 
