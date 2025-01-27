@@ -83,6 +83,41 @@ app.get("/api/v1/websites/:website", async (req, res) => {
     res.status(data.code).json({ success: data.success, message: data.message });
   }
 });
+app.get("/api/v1/websites/:website/images", async (req, res) => {
+  const website = req.params.website;
+  const basePath = path.join(__dirname, 'images/websites', website);
+
+  try {
+    const filePath = path.join(basePath, '0.png');
+    console.log(basePath);
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).json({ message: "Image not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+app.get("/api/v1/websites/:website/images/:name", async (req, res) => {
+  const website = req.params.website;
+  const name = req.params.name;
+  const basePath = path.join(__dirname, 'images/websites', website);
+
+  try {
+    const filePath = path.join(basePath, name + '.png');
+    console.log(basePath);
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).json({ message: "Image not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
 
 app.get("/api/v1/images/:type", async (req, res) => {
   const type = req.params.type;
