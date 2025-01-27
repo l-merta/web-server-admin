@@ -28,13 +28,11 @@ app.get("/api/v1/websites", async (req, res) => {
   let query = `SELECT * FROM websites WHERE public=1`;
   const params = [];
 
-  try {
-    const db = await getDb();
-    const rows = await db.all(query, params);
-    res.json(rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ code: 500, message: "Internal Server Error" });
+  const data = await GetDbData(query, params);
+  if (data.success) {
+    res.json(data.data);
+  } else {
+    res.status(data.code).json({ message: data.message });
   }
   /*
   getCloudflaredConfig((error, data) => {
@@ -45,6 +43,55 @@ app.get("/api/v1/websites", async (req, res) => {
   });
   */
 });
+app.get("/api/v1/websites/own", async (req, res) => {
+  let query = `SELECT * FROM websites WHERE public=1 AND type='own'`;
+  const params = [];
+
+  const data = await GetDbData(query, params);
+  if (data.success) {
+    res.json(data.data);
+  } else {
+    res.status(data.code).json({ message: data.message });
+  }
+});
+app.get("/api/v1/websites/school", async (req, res) => {
+  let query = `SELECT * FROM websites WHERE public=1 AND type='school'`;
+  const params = [];
+
+  const data = await GetDbData(query, params);
+  if (data.success) {
+    res.json(data.data);
+  } else {
+    res.status(data.code).json({ message: data.message });
+  }
+});
+app.get("/api/v1/websites/:website", async (req, res) => {
+  const website = req.params.website;
+  let query = `SELECT * FROM websites WHERE public=1 AND file_name = ?`;
+  const params = [website];
+
+  const data = await GetDbData(query, params);
+  if (data.success) {
+    if (data.data.length > 0) {
+      res.json({success: data.success, data: data.data[0]}); // Return the first item directly
+    } else {
+      res.status(404).json({ success: data.success, message: "Website not found" });
+    }
+  } else {
+    res.status(data.code).json({ success: data.success, message: data.message });
+  }
+});
+
+async function GetDbData(query, params = []) {
+  try {
+    const db = await getDb();
+    const rows = await db.all(query, params);
+    return {success: true, data: rows};
+  } catch (error) {
+    console.error(error);
+    return {success: false, code: 500, message: "Internal Server Error"};
+  }
+}
 
 // Handle all other routes and return the main HTML file
 app.get("*", (req, res) => {
