@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require("express");
 const cors = require('cors');
+const path = require('path');
+const fs = require('fs');
 //const { getCloudflaredConfig } = require('./commands');
 const { connectToDatabase, getDb, closeDatabase, refreshDatabaseConnection } = require("./db");
 
@@ -79,6 +81,83 @@ app.get("/api/v1/websites/:website", async (req, res) => {
     }
   } else {
     res.status(data.code).json({ success: data.success, message: data.message });
+  }
+});
+
+app.get("/api/v1/images/:type", async (req, res) => {
+  const type = req.params.type;
+  const basePath = path.join(__dirname, 'images', 'background', type);
+
+  try {
+    if (type === 'gif') {
+      const folders = fs.readdirSync(basePath).filter(file => fs.statSync(path.join(basePath, file)).isDirectory());
+      const randomFolder = folders[Math.floor(Math.random() * folders.length)];
+      const folderPath = path.join(basePath, randomFolder);
+      const files = fs.readdirSync(folderPath).filter(file => fs.statSync(path.join(folderPath, file)).isFile());
+      const randomFile = files[Math.floor(Math.random() * files.length)];
+      res.sendFile(path.join(folderPath, randomFile));
+    } else if (type === 'grad') {
+      const files = fs.readdirSync(basePath).filter(file => fs.statSync(path.join(basePath, file)).isFile());
+      const randomFile = files[Math.floor(Math.random() * files.length)];
+      res.sendFile(path.join(basePath, randomFile));
+    } else {
+      res.status(400).json({ message: "Invalid type" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+app.get("/api/v1/images/:type/:group", async (req, res) => {
+  const type = req.params.type;
+  const group = req.params.group;
+  const basePath = path.join(__dirname, 'images', 'background', type);
+
+  try {
+    if (type === 'gif') {
+      const folderPath = path.join(basePath, group);
+      const files = fs.readdirSync(folderPath).filter(file => fs.statSync(path.join(folderPath, file)).isFile());
+      const randomFile = files[Math.floor(Math.random() * files.length)];
+      res.sendFile(path.join(folderPath, randomFile));
+    } else if (type === 'grad') {
+      const files = fs.readdirSync(basePath).filter(file => fs.statSync(path.join(basePath, file)).isFile());
+      const randomFile = files[Math.floor(Math.random() * files.length)];
+      res.sendFile(path.join(basePath, randomFile));
+    } else {
+      res.status(400).json({ message: "Invalid type" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+app.get("/api/v1/images/:type/:group/:name", async (req, res) => {
+  const type = req.params.type;
+  const group = req.params.group;
+  const name = req.params.name;
+  const basePath = path.join(__dirname, 'images', 'background', type);
+
+  try {
+    if (type === 'gif') {
+      const filePath = path.join(basePath, group, `${name}.gif`);
+      if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+      } else {
+        res.status(404).json({ message: "Image not found" });
+      }
+    } else if (type === 'grad') {
+      const filePath = path.join(basePath, `${name}.png`);
+      if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+      } else {
+        res.status(404).json({ message: "Image not found" });
+      }
+    } else {
+      res.status(400).json({ message: "Invalid type" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
