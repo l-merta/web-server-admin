@@ -16,6 +16,17 @@ RUN cd client && npm run build
 COPY server/package*.json ./server/
 RUN cd server && npm install
 
+# Install cloudflared and sshpass
+RUN apt-get update && apt-get install -y curl sshpass && \
+    curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cloudflared.deb && \
+    dpkg -i cloudflared.deb && \
+    rm cloudflared.deb
+
+# Configure SSH
+RUN mkdir -p /root/.ssh && \
+    echo "Host mertalukas\n    HostName ssh.mertalukas.cz\n    ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h\n    User root\n" > /root/.ssh/config
+RUN echo "Host sql.mertalukas.cz\n    HostName sql.mertalukas.cz\n    ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h\n    User root" >> /root/.ssh/config
+
 # Přesun kompilovaných souborů z Reactu do veřejné složky serveru
 RUN mkdir -p server/public && cp -r client/dist/* server/public/
 #RUN cp -r client/dist/* server/
