@@ -14,20 +14,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install cloudflared
+    - name: Install cloudflared and sshpass
       run: |
-        curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
-        chmod +x cloudflared
-        sudo mv cloudflared /usr/local/bin/
+        apt-get update && apt-get install -y curl sshpass && \
+        curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm.deb -o cloudflared.deb && \
+        dpkg -i cloudflared.deb && \
+        rm cloudflared.deb
 
     - name: Create .ssh directory
       run: |
         mkdir -p ~/.ssh
-
-    - name: Install sshpass
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y sshpass
 
     - name: Configure SSH
       run: |
