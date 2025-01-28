@@ -119,6 +119,58 @@ app.get("/api/v1/websites/:website/images/:name", async (req, res) => {
   }
 });
 
+app.get("/api/v1/tech", async (req, res) => {
+  let query = `SELECT * FROM tech`;
+  const params = [];
+
+  const data = await GetDbData(query, params);
+  if (data.success) {
+    res.json(data.data);
+  } else {
+    res.status(data.code).json({ message: data.message });
+  }
+  /*
+  getCloudflaredConfig((error, data) => {
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+    res.json({ config: data });
+  });
+  */
+});
+app.get("/api/v1/tech/:tech", async (req, res) => {
+  const tech = req.params.tech;
+  let query = `SELECT * FROM tech WHERE file_name = ?`;
+  const params = [tech];
+
+  const data = await GetDbData(query, params);
+  if (data.success) {
+    if (data.data.length > 0) {
+      res.json({success: data.success, data: data.data[0]}); // Return the first item directly
+    } else {
+      res.status(404).json({ success: data.success, message: "Tech not found" });
+    }
+  } else {
+    res.status(data.code).json({ success: data.success, message: data.message });
+  }
+});
+app.get("/api/v1/tech/:tech/images", async (req, res) => {
+  const tech = req.params.tech;
+  const basePath = path.join(__dirname, 'images/tech');
+
+  try {
+    const filePath = path.join(basePath, `${tech}.png`);
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).json({ message: "Image not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 app.get("/api/v1/images/:type", async (req, res) => {
   const type = req.params.type;
   const basePath = path.join(__dirname, 'images', 'background', type);
