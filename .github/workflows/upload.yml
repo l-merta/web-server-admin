@@ -62,6 +62,7 @@ jobs:
       run: |
         sshpass -e ssh -o StrictHostKeyChecking=no root@mertalukas "
           docker stop web-server-admin-cont || true && docker rm web-server-admin-cont || true
+          docker rmi lmerta/web-server-admin:latest
           docker pull lmerta/web-server-admin:latest
           docker run -dp 6010:5200 --name web-server-admin-cont --restart unless-stopped lmerta/web-server-admin:latest
         "
