@@ -252,10 +252,23 @@ async function GetDbData(query, params = []) {
   try {
     const db = await getDb();
     const rows = await db.all(query, params);
-    return {success: true, data: rows};
+
+    // Parse the tech column as an array
+    const parsedRows = rows.map(row => {
+      if (row.tech) {
+        try {
+          row.tech = JSON.parse(row.tech);
+        } catch (e) {
+          console.error(`Error parsing tech column: ${e.message}`);
+        }
+      }
+      return row;
+    });
+
+    return { success: true, data: parsedRows };
   } catch (error) {
     console.error(error);
-    return {success: false, code: 500, message: "Internal Server Error"};
+    return { success: false, code: 500, message: "Internal Server Error" };
   }
 }
 
