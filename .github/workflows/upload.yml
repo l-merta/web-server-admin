@@ -47,8 +47,9 @@ jobs:
         
     - name: Deploy Docker image to server
       run: |
-        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy@mertalukas.cz "
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy@mertalukas.cz << 'EOF'
           docker stop web-server-admin-cont || true && docker rm web-server-admin-cont || true
           docker rmi lmerta/web-server-admin:latest || true
           docker pull lmerta/web-server-admin:latest
           docker run -dp 6010:5200 --name web-server-admin-cont --restart unless-stopped lmerta/web-server-admin:latest
+        EOF
