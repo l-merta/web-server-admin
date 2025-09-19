@@ -13,26 +13,7 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Install cloudflared and sshpass
-      run: |
-        apt-get update && sudo apt-get install -y curl sshpass
-        curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
-        chmod +x cloudflared
-        sudo mv cloudflared /usr/local/bin/
-
-    - name: Create .ssh directory
-      run: |
-        mkdir -p ~/.ssh
-
-    - name: Configure SSH
-      run: |
-        echo "Host mertalukas
-          HostName ssh.mertalukas.cz
-          User root
-          ProxyCommand cloudflared access ssh --hostname %h --service-token-id ${{ secrets.CLOUDFLARE_SERVICE_TOKEN_ID }} --service-token-secret ${{ secrets.CLOUDFLARE_SERVICE_TOKEN_SECRET }}
-        " >> ~/.ssh/config
-
+      
     - name: Export Environment Variables
       env:
         DB_HOST: ${{ secrets.DB_HOST }}
@@ -56,13 +37,18 @@ jobs:
         docker login -u lmerta -p ${{ secrets.DOCKER_PASSWORD }}
         docker buildx build --platform linux/arm/v7 -t lmerta/web-server-admin:latest --push .
 
-    - name: Deploy Docker image to Raspberry Pi
+    - name: Setup SSH key
       env:
-        SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
       run: |
-        sshpass -e ssh -o StrictHostKeyChecking=no root@mertalukas "
+        mkdir -p ~/.ssh
+        echo "$DEPLOY_SSH_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        
+    - name: Deploy Docker image to server
+      run: |
+        ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no deploy@mertalukas.cz "
           docker stop web-server-admin-cont || true && docker rm web-server-admin-cont || true
-          docker rmi lmerta/web-server-admin:latest
+          docker rmi lmerta/web-server-admin:latest || true
           docker pull lmerta/web-server-admin:latest
           docker run -dp 6010:5200 --name web-server-admin-cont --restart unless-stopped lmerta/web-server-admin:latest
-        "
