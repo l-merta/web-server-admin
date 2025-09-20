@@ -17,10 +17,10 @@ COPY server/package*.json ./server/
 RUN cd server && npm install
 
 # Install cloudflared and sshpass
-RUN apt-get update && apt-get install -y curl sshpass && \
-    curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-armhf.deb -o cloudflared.deb && \
-    dpkg -i cloudflared.deb && \
-    rm cloudflared.deb
+RUN apt-get update && apt-get install -y curl gnupg && \
+    curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null && \
+    echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/cloudflare.list && \
+    apt-get update && apt-get install -y cloudflared sshpass
 
 # Configure SSH
 RUN mkdir -p /root/.ssh && \
